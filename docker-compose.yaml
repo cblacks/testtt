@@ -7,7 +7,7 @@ services:
     tty: true
     volumes:
       - '.:/project'
-      - './docker/nginx/default.conf:/etc/xnginx/conf.d/default.conf'
+      - './docker/nginx/default.conf:/etc/nginx/conf.d/default.conf'
     depends_on:
       - auth_php
     ports:
