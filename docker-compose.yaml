@@ -1,0 +1,70 @@
+services:
+  auth_nginx:
+    container_name: auth_nginx
+    image: 'nginx:alpine'
+    working_dir: /project
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - '.:/project'
+      - './docker/nginx/default.conf:/etc/xnginx/conf.d/default.conf'
+    depends_on:
+      - auth_php
+    ports:
+      - "80"
+    environment:
+      - TEST=${TEST}
+      - PORT=80
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_NAME=MyWebProducts
+      - DB_CONNECTION=mysql
+      - DB_HOST=auth_php
+      - QUEUE_CONNECTION=sync
+      - APP_KEY
+      - APP_URL
+      - DB_PORT
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+      - REDIS_HOST
+      - REDIS_PASSWORD
+  auth_php:
+    container_name: auth_php
+    build: ./docker/php
+    working_dir: /project
+    tty: true
+    environment:
+      - TEST=${TEST}
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_NAME=MyWebProducts
+      - DB_CONNECTION=mysql
+      - DB_HOST=auth_php
+      - QUEUE_CONNECTION=sync
+      - APP_KEY
+      - APP_URL
+      - DB_PORT
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+      - REDIS_HOST
+      - REDIS_PASSWORD
+    volumes:
+      - '.:/project'
+      - './docker/php/php-ini-overrides.ini:/etc/php/8.1/fpm/conf.d/99-overrides.ini'
+    depends_on:
+      - auth_mysql
+  auth_mysql:
+    container_name: auth_mysql
+    image: 'mysql:8.0'
+    working_dir: /project
+    volumes:
+      - auth_database:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+volumes:
+  auth_database:
